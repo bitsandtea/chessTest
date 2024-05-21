@@ -1,6 +1,7 @@
 const express = require("express");
 const ethers = require("ethers");
 const bodyParser = require("body-parser");
+const { parse } = require("path");
 
 const app = express();
 
@@ -123,6 +124,11 @@ app.get("/getName", async (req, res) => {
 // route for getting balance, that calls the balanceOf function of the smart contract provided
 app.get("/getBalance/:id", async (req, res) => {
   try {
+    const address = req.params.id;
+    isValid = ethers.utils.isAddress(address);
+    if (!isValid) {
+      throw new Error("Invalid address");
+    }
     const balance = await contract.balanceOf(req.params.id);
     const decimals = await contract.decimals();
 
@@ -141,6 +147,14 @@ app.get("/getBalance/:id", async (req, res) => {
 app.post("/transfer", async (req, res) => {
   try {
     const { recipient, amount } = req.body;
+    isValid = ethers.utils.isAddress(recipient);
+    parseInt(amount);
+    if (isNaN(amount) || amount <= 0) {
+      throw new Error("Invalid amount");
+    }
+    if (!isValid) {
+      throw new Error("Invalid address");
+    }
     const wallet = new ethers.Wallet(signerPKey, provider);
     const contractWithSigner = contract.connect(wallet);
 
